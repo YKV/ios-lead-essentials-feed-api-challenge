@@ -8,17 +8,11 @@
 
 import Foundation
 
-internal enum NetworkErrorCode {
-	static let SUCCESS_200 = 200
-	static let REDIRECT_300 = 300
-	static let BAD_REQUEST_400 = 400
-	static let UNAUTHORIZED_401 = 401
-	static let FORBIDDEN_403 = 403
-	static let NOT_FOUND = 404
-	static let SERVER_500 = 500
+private enum HTTPResponseStatusCode {
+	static let success200 = 200
 }
 
-internal class FeedImageMapper {
+class FeedImageMapper {
 	private struct ItemsDTO: Decodable {
 		let items: [Item]
 	}
@@ -37,12 +31,12 @@ internal class FeedImageMapper {
 		}
 	}
 
-	internal static func map(_ data: Data, from response: HTTPURLResponse) -> FeedLoader.Result {
-		guard response.statusCode == NetworkErrorCode.SUCCESS_200,
+	static func map(_ data: Data, from response: HTTPURLResponse) -> FeedLoader.Result {
+		guard response.statusCode == HTTPResponseStatusCode.success200,
 		      let itemsDTO = try? JSONDecoder().decode(ItemsDTO.self, from: data) else {
 			return .failure(RemoteFeedLoader.Error.invalidData)
 		}
 
-		return .success(itemsDTO.items.map { $0.imageItem })
+		return .success(itemsDTO.items.map(\.imageItem))
 	}
 }
